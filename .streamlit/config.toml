@@ -1,10 +1,37 @@
+# Streamlit native theming - "Editorial Report": cream paper background,
+# ink-black text, a muted brick-red accent, thin hairline rules. This is
+# the same visual direction the app already had - Georgia serif headlines,
+# numbered section eyebrows, a print-report feel - just moved from a
+# blanket CSS override into Streamlit's own theme engine, which handles
+# widget states (focus, hover, selection) that hand-written CSS usually
+# misses.
+#
+# Sharp corners (baseRadius = "small", not "large") are deliberate here,
+# unlike a chunkier console-style theme: a printed report reads as
+# precise and ruled, not soft and toy-like.
+
 [theme]
 base = "light"
+
 primaryColor = "#C44E52"
 backgroundColor = "#FAFAF8"
 secondaryBackgroundColor = "#F0EEE8"
 textColor = "#1A1A1A"
-font = "sans serif"
+linkColor = "#C44E52"
 
-[browser]
-gatherUsageStats = false
+borderColor = "#DEDBD1"
+dataframeBorderColor = "#DEDBD1"
+dataframeHeaderBackgroundColor = "#F0EEE8"
+showWidgetBorder = true
+showSidebarBorder = true
+
+baseRadius = "small"
+
+# Georgia isn't reliably loadable as a web font (it's a licensed system
+# font, not something Google Fonts or a similar service can host), so
+# "serif" is used instead - this maps to Streamlit's built-in Source
+# Serif, which reads as the same "editorial headline" register Georgia
+# was going for, without depending on a font the visitor's device may or
+# may not have installed.
+headingFont = "serif"
+font = "Inter:https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"

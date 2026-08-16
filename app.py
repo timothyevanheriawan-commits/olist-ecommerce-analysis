@@ -24,6 +24,11 @@ st.set_page_config(
 
 DATA_DIR = "data"
 
+# Colors here exist for Plotly's benefit, not Streamlit's - Plotly, like
+# matplotlib, is a separate rendering pipeline that doesn't read
+# Streamlit's theme, so chart colors still need to be set in Python.
+# Streamlit's own UI (backgrounds, borders, widget states, fonts) is
+# themed natively in .streamlit/config.toml instead.
 ACCENT = "#C44E52"
 ACCENT_SOFT = "#DD8452"
 INK = "#1A1A1A"
@@ -46,49 +51,26 @@ CHART_TEMPLATE = go.layout.Template(
 )
 
 # -----------------------------------------------------------------
-# Custom CSS. Forces the light theme directly instead of depending
-# on .streamlit/config.toml, and sets explicit text colors on every
-# element so nothing inherits an invisible color from a dark default.
+# Custom CSS - only the handful of things .streamlit/config.toml can't
+# express: the numbered section-eyebrow rule, the finding/callout boxes,
+# the italic caveat style, and the metric card's left accent border
+# (config.toml gives every metric the same border on all sides; the
+# left-only accent stripe is a deliberate editorial touch on top of that).
+# Backgrounds, text color, borders, fonts, and widget states are all
+# handled by the theme engine now, not forced here with !important.
 # -----------------------------------------------------------------
 st.markdown(
     f"""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Georgia&family=Inter:wght@400;500;600;700&display=swap');
-
-    :root {{
-        --background-color: {PAPER};
-        --secondary-background-color: {CARD};
-        --text-color: {INK};
-        --primary-color: {ACCENT};
-    }}
-
-    html, body, .stApp,
-    [data-testid="stAppViewContainer"],
-    [data-testid="stHeader"],
-    [data-testid="stMain"],
-    [class*="css"] {{
-        background-color: {PAPER} !important;
-        color: {INK} !important;
-        font-family: 'Inter', -apple-system, sans-serif;
-    }}
-
-    p, span, li, label, div, a, .stMarkdown, .stMarkdown p {{
-        color: {INK};
-    }}
-
     .block-container {{
         padding-top: 2.5rem;
         padding-bottom: 3rem;
         max-width: 1100px;
     }}
 
-    /* --- Page title --- */
     h1 {{
-        font-family: Georgia, 'Times New Roman', serif !important;
-        font-weight: 400 !important;
         font-size: 2.5rem !important;
         letter-spacing: -0.02em;
-        color: {INK} !important;
         margin-bottom: 0.3rem !important;
     }}
 
@@ -106,7 +88,7 @@ st.markdown(
         border-bottom: 1px solid {ACCENT};
     }}
 
-    /* --- Section headings, redesigned as one cohesive block --- */
+    /* --- Section headings, as one cohesive numbered unit --- */
     .section-block {{
         margin-top: 3.5rem;
         margin-bottom: 1.25rem;
@@ -117,7 +99,6 @@ st.markdown(
         align-items: center;
         gap: 0.6rem;
         color: {ACCENT} !important;
-        font-family: 'Inter', sans-serif;
         font-weight: 700;
         font-size: 0.72rem;
         letter-spacing: 0.12em;
@@ -133,43 +114,30 @@ st.markdown(
     }}
 
     h2.section-title {{
-        font-family: Georgia, 'Times New Roman', serif !important;
-        font-weight: 400 !important;
         font-size: 1.7rem !important;
-        color: {INK} !important;
         margin: 0 !important;
         padding: 0 !important;
         line-height: 1.25;
     }}
 
     .plain-explainer {{
-        color: {INK} !important;
         font-size: 0.95rem;
         line-height: 1.55;
         background-color: {CARD};
-        border-radius: 4px;
         padding: 0.85rem 1.1rem;
         margin: 0.75rem 0 1.25rem 0;
     }}
 
     div[data-testid="stMetric"] {{
-        background-color: {CARD} !important;
-        border: 1px solid {LINE};
         border-left: 3px solid {ACCENT};
-        border-radius: 2px;
         padding: 1rem 1.2rem;
     }}
 
-    div[data-testid="stMetricLabel"], div[data-testid="stMetricLabel"] * {{
+    div[data-testid="stMetricLabel"] {{
         font-size: 0.75rem !important;
         text-transform: uppercase;
         letter-spacing: 0.05em;
         color: {MUTED} !important;
-    }}
-
-    div[data-testid="stMetricValue"], div[data-testid="stMetricValue"] * {{
-        font-family: Georgia, serif;
-        color: {INK} !important;
     }}
 
     .finding-box {{
@@ -179,11 +147,6 @@ st.markdown(
         margin: 1rem 0 1.5rem 0;
         font-size: 0.95rem;
         line-height: 1.6;
-        color: {INK} !important;
-    }}
-
-    .finding-box, .finding-box p, .finding-box i, .finding-box span {{
-        color: {INK} !important;
     }}
 
     .finding-box b {{
@@ -201,14 +164,6 @@ st.markdown(
         border: none;
         border-top: 1px solid {LINE};
         margin: 2.5rem 0;
-    }}
-
-    .stSlider > div > div {{
-        color: {ACCENT};
-    }}
-
-    button[data-baseweb="tab"] p, .stRadio label p {{
-        color: {INK} !important;
     }}
     </style>
     """,
