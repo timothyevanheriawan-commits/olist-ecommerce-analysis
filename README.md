@@ -1,28 +1,219 @@
 # Olist E-Commerce: Sales & Delivery Performance Analysis
 
-Analysis of ~99,441 orders from the [Brazilian E-Commerce Public Dataset by Olist](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce)
-(2016–2018), focused on what drives late deliveries and low review scores, and
-which product categories/regions should be prioritized first.
+An analysis of approximately **99,441 orders** from the [Brazilian E-Commerce Public Dataset by Olist](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce), covering 2016 to 2018.
 
-**This notebook has been executed end-to-end against the real dataset.** All numbers below
-are copied directly from the notebook's actual output, not estimated or written in advance.
+The analysis focuses on three business questions:
+
+1. Which product categories contribute the most revenue?
+2. How strongly does delivery performance relate to customer satisfaction?
+3. Which regions and operational factors should be prioritized for improvement?
+
+**📊 [View the live interactive dashboard](https://olist-commerce-analysis.streamlit.app/)**
+
+**This notebook has been executed end-to-end against the real dataset.** All figures reported below are taken directly from the notebook's actual output.
 
 ## Links
 
-- 📓 **Notebook (full analysis, executed):** `olist_analysis.ipynb` in this repo
-- 📊 **Dashboard (Streamlit):** not yet deployed — run locally with the instructions below
-- ✍️ **Written case study:** not yet written — the Key Findings section below is the
-  current substitute
+* 📊 **Live dashboard:** [olist-commerce-analysis.streamlit.app](https://olist-commerce-analysis.streamlit.app/)
+* 📓 **Full analysis:** [`olist_analysis.ipynb`](./olist_analysis.ipynb)
+* 📈 **Chart exports:** [`charts/`](./charts/)
 
-## Structure
+## Key Findings
 
+### 1. Revenue is concentrated, but not extremely so
+
+**17 of 72 product categories account for approximately 80% of total revenue.**
+
+The three largest categories are:
+
+| Category          | Share of Revenue |
+| ----------------- | ---------------: |
+| Health & Beauty   |             9.3% |
+| Watches & Gifts   |             8.9% |
+| Bed, Bath & Table |             7.6% |
+
+Together, these three categories contribute approximately **24% of total revenue**.
+
+**Business implication:** Delivery-performance improvements should initially focus on high-revenue categories because operational problems in these categories expose more revenue to potential customer dissatisfaction.
+
+---
+
+### 2. Late deliveries are strongly associated with low review scores at the order level
+
+At the order level, delivery delay and review score show a negative Spearman correlation:
+
+**ρ = -0.176, p ≈ 0, n = 95,601**
+
+The difference becomes particularly clear when comparing late and non-late orders:
+
+| Delivery Performance | Average Review Score |
+| -------------------- | -------------------: |
+| On time / early      |             **4.29** |
+| 7+ days late         |             **1.69** |
+
+However, the relationship changes substantially when analyzed at the category level.
+
+Across 63 categories with at least 30 orders:
+
+**ρ = -0.096, p = 0.455**
+
+This category-level result is not statistically significant.
+
+The contrast suggests that the relationship is primarily driven by **individual orders experiencing delays**, rather than certain product categories being structurally slower and receiving worse reviews.
+
+**Business implication:** Improve delivery reliability at the order and logistics level, particularly through carrier performance and delivery-estimate accuracy, rather than treating specific product categories as inherently problematic.
+
+---
+
+### 3. Regional delivery buffers vary substantially
+
+Every state in the regional analysis delivered earlier than the estimated delivery date on average, but the size of that buffer varies considerably.
+
+| State          | Delivery Buffer | Average Review |
+| -------------- | --------------: | -------------: |
+| Alagoas (AL)   |       -8.8 days |           3.86 |
+| São Paulo (SP) |      -11.1 days |           4.25 |
+| Acre (AC)      |       ~-20 days |           ~4.1 |
+| Rondônia (RO)  |       ~-21 days |           ~4.2 |
+
+São Paulo is by far the highest-volume market with **40,068 orders**, while Alagoas has the smallest average delivery buffer and the lowest average review score among the states shown.
+
+**Business implication:** States with thinner delivery buffers, particularly AL, MA, and SE, may benefit from recalibrated delivery estimates. Smaller buffers leave less room for operational disruptions before an order becomes late.
+
+---
+
+### 4. Freight cost has a negligible relationship with review score
+
+Freight cost as a percentage of order value has an extremely weak negative relationship with review score:
+
+**ρ = -0.031, p = 1.68e-21, n ≈ 94,000**
+
+Although the relationship is statistically significant because of the large sample size, the effect size is extremely small.
+
+This is an important distinction between **statistical significance and practical significance**.
+
+**Business implication:** Freight cost should be deprioritized as a customer-satisfaction lever compared with delivery reliability and delivery-estimate accuracy.
+
+---
+
+### 5. Marketplace growth affects the interpretation of monthly order trends
+
+Raw monthly order volume increases over the 2016 to 2018 period, but this does not necessarily represent seasonal demand.
+
+Olist's marketplace was also growing during this period, meaning that simply comparing monthly order counts can mix **seasonality with overall marketplace expansion**.
+
+The analysis therefore includes an additional view based on **orders per active seller** to provide a more growth-adjusted perspective.
+
+**Business implication:** Seasonal demand should be evaluated relative to marketplace scale rather than using raw order volume alone. This helps distinguish genuine seasonal patterns from growth in the underlying seller base.
+
+---
+
+## Overall Recommendation
+
+The analysis suggests three practical priorities:
+
+### 1. Improve delivery reliability
+
+The strongest customer-satisfaction signal is the relationship between individual delivery delays and review scores.
+
+Focus on:
+
+* Carrier reliability
+* Delivery SLA monitoring
+* Delivery-estimate accuracy
+* Early identification of orders at risk of becoming late
+
+### 2. Recalibrate delivery estimates in thin-buffer regions
+
+States with smaller delivery buffers have less room to absorb operational disruptions.
+
+Review and recalibrate delivery estimates in regions such as **AL, MA, and SE** before applying broad changes across the entire marketplace.
+
+### 3. Deprioritize freight cost as a primary satisfaction lever
+
+The relationship between freight cost and review score is too small to justify prioritizing it over delivery reliability.
+
+The data supports addressing **when an order arrives** before focusing heavily on **how much shipping costs**.
+
+## Methodology
+
+The analysis was performed using a combination of **DuckDB SQL and Python/Pandas**.
+
+1. Raw Olist CSV files were loaded directly using DuckDB.
+2. Orders, order items, products, customers, reviews, and payments were cleaned and joined.
+3. Item-level data was explicitly aggregated to the order level before order-level joins to avoid duplication caused by the one-to-many relationship between orders and order items.
+4. Revenue was analyzed by product category using Pareto analysis.
+5. Delivery delay was compared with review scores at both the order and category levels.
+6. Regional delivery performance was evaluated after filtering states with insufficient order volume.
+7. Monthly order trends were examined alongside a growth-adjusted orders-per-active-seller measure.
+8. Payment behavior and freight cost were also evaluated.
+9. **Spearman correlation** was used rather than Pearson correlation because review score is an ordinal variable.
+10. Aggregated results were exported for use in the Streamlit dashboard.
+
+## Dataset
+
+The analysis uses approximately **99,441 orders** from Olist's Brazilian E-Commerce Public Dataset, covering **2016 to 2018**.
+
+The dataset contains information about:
+
+* Orders
+* Order items
+* Products
+* Customers
+* Sellers
+* Reviews
+* Payments
+* Delivery dates
+* Product categories
+* Brazilian geographic regions
+
+## Limitations
+
+* **1.2% of rows** used in the delay-vs-review analysis were dropped due to missing delay or review-score values: 1,114 of 96,715 observations.
+* The **7+ day late** threshold is illustrative rather than a validated SLA threshold. It should be treated as a sensitivity check rather than a formal operational standard.
+* **Roraima (RR)** was excluded from the regional analysis because it had fewer than 50 orders.
+* `primary_category` represents the category of an order's highest-value item. For multi-category orders, this is therefore an analytical simplification rather than a strict order-level category.
+* Category-level correlation was included to test whether product category could explain the order-level delay and review relationship. Both levels are reported rather than relying only on the aggregate correlation.
+* Monthly order volume is influenced by Olist marketplace growth as well as seasonal demand. The analysis therefore includes orders per active seller as a complementary growth-adjusted measure.
+* Correlation indicates association rather than causation. The observed relationship between delivery delays and review scores should not be interpreted as proof that delays alone caused lower ratings.
+
+## Tech Stack
+
+* **Python**
+* **DuckDB** for SQL-based data analysis
+* **Pandas / NumPy** for data processing
+* **Plotly** for visualization
+* **Streamlit** for the interactive dashboard
+
+## Running Locally
+
+Install the dependencies:
+
+```bash
+pip install -r requirements.txt
 ```
+
+Run the dashboard:
+
+```bash
+streamlit run app.py
+```
+
+Streamlit will provide a local URL, usually:
+
+```text
+http://localhost:8501
+```
+
+## Repository Structure
+
+```text
 .
-├── olist_analysis.ipynb     # full SQL (DuckDB) + pandas analysis — executed, outputs saved
-├── app.py                   # Streamlit dashboard (custom theme + CSS)
-├── requirements.txt
-├── config.toml               # dashboard color theme
-├── data/                    # aggregated CSVs exported from the executed notebook, used by app.py
+├── olist_analysis.ipynb     # Full SQL + Python analysis
+├── app.py                   # Streamlit dashboard
+├── requirements.txt         # Python dependencies
+├── config.toml              # Dashboard theme configuration
+├── data/
 │   ├── revenue_by_category.csv
 │   ├── delay_review.csv
 │   ├── category_delay_review.csv
@@ -30,86 +221,12 @@ are copied directly from the notebook's actual output, not estimated or written 
 │   ├── monthly_orders.csv
 │   ├── payment_summary.csv
 │   └── delay_review_freight.csv
-├── charts/                  # PNG exports of every chart the notebook produces
+├── charts/                  # PNG exports of notebook charts
 └── README.md
 ```
 
-## Method
+## Project Goal
 
-1. Loaded raw Olist CSVs directly with SQL via DuckDB (no database server needed).
-2. Cleaned and joined orders, order items, products, customers, reviews, and payments —
-   explicitly aggregating item-grain data to order-grain before any order-level join
-   (the raw dataset's `order_items` table is one row per item, not per order).
-3. Analyzed revenue by category (Pareto), delivery delay vs. review score at both the
-   order level and category level (to check for confounding — see Limitations), regional
-   delivery performance (filtered to states with sufficient order volume), growth-adjusted
-   seasonality, payment type behavior, and freight cost vs. review score.
-4. Used Spearman (not Pearson) correlation throughout, since review score is ordinal.
-5. Exported aggregated results and built a custom-themed interactive dashboard in Streamlit.
+This project demonstrates an end-to-end approach to **e-commerce business analysis**, combining SQL, statistical analysis, data visualization, business interpretation, and an interactive deployed dashboard.
 
-## Key Findings
-
-**1. Revenue is concentrated but not extremely so.** 17 of 72 categories account for
-~80% of total revenue. The top 3 — health_beauty (9.3%), watches_gifts (8.9%),
-bed_bath_table (7.6%) — make up ~24% on their own. **→ Prioritize delivery-performance
-fixes for these top categories first; they carry the most revenue risk if delivery
-problems drag down reviews.**
-
-**2. Late delivery is strongly linked to bad reviews at the order level — but not at
-the category level.** Order-level Spearman correlation between delivery delay and
-review score: **ρ = -0.176, p ≈ 0 (n = 95,601)**. Orders delivered 7+ days late average
-a **1.69** review score vs. **4.29** for on-time/early orders — a large, highly
-significant gap. But re-running the same correlation at the category level (63
-categories with ≥30 orders) gives **ρ = -0.096, p = 0.455** — the relationship
-weakens sharply and loses significance. This means most of the effect comes from
-delay varying *within* categories (an individual late order gets a bad review),
-not from certain categories being structurally slower and worse-rated as a group.
-**→ Fix delay as an order-level operational problem (carrier SLAs, delivery-estimate
-accuracy) — don't target specific "slow categories," the data doesn't support that
-being the more effective lever.**
-
-**3. Every state delivers ahead of estimate on average, but the safety margin varies
-a lot.** Alagoas (AL) has the thinnest buffer (-8.8 days) and the lowest average
-review score in the table (3.86). Acre (AC) and Rondônia (RO) have the largest
-buffers (~-20 to -21 days) and healthier review scores (~4.1-4.2). São Paulo (SP) —
-by far the highest-volume state at 40,068 orders — sits mid-table (-11.1 days,
-4.25 average review). **→ Recalibrate delivery-time estimates specifically for
-thin-buffer states (AL, MA, SE) — a small margin means small operational hiccups
-are more likely to actually become a late delivery there than elsewhere.**
-
-**4. Freight cost is not a meaningful lever.** Freight-as-%-of-order-value vs.
-review score: **ρ = -0.031, p = 1.68e-21**. Statistically significant purely because
-of the large sample size (n ≈ 94,000) — the effect size is too small to act on.
-**→ Deprioritize freight cost relative to Findings 2 and 3.**
-
-**Overall recommendation:** focus first on delivery-estimate accuracy and carrier
-reliability broadly (not category-specific), and second on recalibrating delivery
-windows for thin-buffer states — both are where the data shows the strongest,
-most defensible signal.
-
-## Running Locally
-
-```bash
-pip install -r requirements.txt
-streamlit run app.py
-```
-
-## Limitations
-
-- 1.2% of rows (1,114 of 96,715) were dropped from the delay-vs-review analysis for
-  missing delay or review score — small enough not to materially bias the headline
-  correlation, disclosed here rather than left silent.
-- The "7+ days late" cutoff used in the headline delay comparison is illustrative,
-  not a validated SLA threshold — treat it as a sensitivity check, not a fixed rule.
-- One state (RR / Roraima) was excluded from the regional analysis for having fewer
-  than 50 orders.
-- `primary_category` is defined as the category of an order's highest-value item —
-  a reasonable simplification for multi-category orders, but it means "category"
-  here is a per-order label, not a strict SKU-level category.
-- Category-level correlation is included specifically to check whether product
-  category confounds the order-level delay-vs-review relationship — both numbers
-  are reported above, not just the order-level one.
-- Raw monthly order volume is influenced by Olist's own marketplace growth in
-  2016–2018, not just seasonal demand — the notebook includes a growth-adjusted
-  (orders-per-active-seller) view for this reason, though it hasn't yet been
-  distilled into a standalone finding above; that's a natural fifth finding to add.
+Rather than focusing only on descriptive metrics, the analysis connects operational performance with customer satisfaction and translates the results into **prioritized business recommendations**.
