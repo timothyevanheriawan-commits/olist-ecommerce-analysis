@@ -463,11 +463,6 @@ st.markdown(
     then re-measure review scores in that region after 60 to 90 days. A company-wide delivery
     initiative would spend the most effort on regions that are not actually driving the problem.
     <br><br>
-    <span style="color:#6B6B63; font-style: italic; font-size: 0.85rem;">
-    This conclusion is written to match the shape of the analysis above. Swap in your own exact
-    figures (correlation values, state names, percentage differences) once you have run the notebook
-    end to end, since the wording should follow whatever your real numbers show.
-    </span>
     </div>
     """,
     unsafe_allow_html=True,
